@@ -1,0 +1,90 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+class Order {
+public:
+    std::string customer;
+    std::string item;
+    double price;
+
+    Order(std::string cust, std::string itm, double prc) :
+        customer(cust), item(itm), price(prc) {}
+};
+
+class OrderQueue {
+private:
+    std::vector<Order> queue;
+
+public:
+    // Insert: Add a customer/order to the queue
+    void insert(const Order& order) {
+        queue.push_back(order);
+        std::cout << "Order for " << order.customer << " added to the queue." << std::endl;
+    }
+
+    // Delete: Process and remove the customer/order from the front of the queue
+    Order delete_order() {
+        if (is_empty()) {
+            std::cout << "Queue is empty. No orders to process." << std::endl;
+            return Order("", "", 0.0);
+        }
+        Order front_order = queue.front();
+        queue.erase(queue.begin());
+        std::cout << "Order for " << front_order.customer
+                  << " has been processed and removed from the queue." << std::endl;
+        return front_order;
+    }
+
+    // Display: Display all orders currently in the queue
+    void display() {
+        if (is_empty()) {
+            std::cout << "Queue is empty. No orders to display." << std::endl;
+            return;
+        }
+        std::cout << "\nCurrent Orders in Queue:" << std::endl;
+        std::cout << "------------------------" << std::endl;
+        for (size_t i = 0; i < queue.size(); i++) {
+            std::cout << i + 1 << ". Customer: " << queue[i].customer
+                      << ", Item: " << queue[i].item
+                      << ", Price: $" << queue[i].price << std::endl;
+        }
+        std::cout << "------------------------" << std::endl;
+    }
+
+    // Check if the queue is empty
+    bool is_empty() {
+        return queue.empty();
+    }
+
+    // Return the number of orders in the queue
+    size_t size() {
+        return queue.size();
+    }
+};
+
+int main() {
+    OrderQueue order_queue;
+
+    // Insert some orders
+    order_queue.insert(Order("John", "Pizza", 12.99));
+    order_queue.insert(Order("Sarah", "Burger", 8.50));
+    order_queue.insert(Order("Mike", "Salad", 7.25));
+
+    // Display the current queue
+    order_queue.display();
+
+    // Process an order (delete from queue)
+    Order processed_order = order_queue.delete_order();
+
+    // Display the updated queue
+    order_queue.display();
+
+    // Add another order
+    order_queue.insert(Order("Lisa", "Pasta", 10.75));
+
+    // Display final queue
+    order_queue.display();
+
+    return 0;
+}

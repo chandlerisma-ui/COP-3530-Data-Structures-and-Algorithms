@@ -1,0 +1,124 @@
+#include <iostream>
+#include <string>
+#include <stack>
+
+// Product Node class
+class ProductNode {
+public:
+    std::string productName;
+    double price;
+    ProductNode* left;
+    ProductNode* right;
+
+    // Constructor
+    ProductNode(std::string name, double productPrice) {
+        productName = name;
+        price = productPrice;
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
+// Binary Search Tree class for product catalog
+class ProductCatalog {
+private:
+    ProductNode* root;
+
+    // Helper method to insert a product
+    ProductNode* insertProduct(ProductNode* node, std::string name, double price) {
+        if (node == nullptr) {
+            return new ProductNode(name, price);
+        }
+        // If price is less, insert in left subtree
+        if (price < node->price) {
+            node->left = insertProduct(node->left, name, price);
+        }
+        // If price is greater or equal, insert in right subtree
+        else {
+            node->right = insertProduct(node->right, name, price);
+        }
+        return node;
+    }
+
+    // Helper method to deallocate memory
+    void destroyTree(ProductNode* node) {
+        if (node != nullptr) {
+            destroyTree(node->left);
+            destroyTree(node->right);
+            delete node;
+        }
+    }
+
+public:
+    // Constructor
+    ProductCatalog() {
+        root = nullptr;
+    }
+
+    // Destructor
+    ~ProductCatalog() {
+        destroyTree(root);
+    }
+
+    // Method to add a product to the catalog
+    void addProduct(std::string name, double price) {
+        root = insertProduct(root, name, price);
+        std::cout << "Product '" << name << "' with price $" << price
+                  << " added to catalog." << std::endl;
+    }
+
+    // Method to perform in-order traversal using a stack (iterative approach)
+    void inOrderTraversalWithStack() {
+        if (root == nullptr) {
+            std::cout << "Product catalog is empty." << std::endl;
+            return;
+        }
+
+        std::cout << "\nProducts sorted by price (ascending order):" << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "Price\t| Product Name" << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
+
+        std::stack<ProductNode*> nodeStack;
+        ProductNode* current = root;
+
+        // Traverse the tree using a stack
+        while (current != nullptr || !nodeStack.empty()) {
+            // Reach the leftmost node of the current node
+            while (current != nullptr) {
+                nodeStack.push(current);
+                current = current->left;
+            }
+            // Current is now nullptr, pop from stack
+            current = nodeStack.top();
+            nodeStack.pop();
+
+            // Process the node
+            std::cout << "$" << current->price << "\t| "
+                      << current->productName << std::endl;
+
+            // Move to the right subtree
+            current = current->right;
+        }
+
+        std::cout << "----------------------------------------" << std::endl;
+    }
+};
+
+int main() {
+    ProductCatalog catalog;
+
+    // Add some products to the catalog
+    catalog.addProduct("Laptop", 899.99);
+    catalog.addProduct("Smartphone", 499.99);
+    catalog.addProduct("Headphones", 149.99);
+    catalog.addProduct("Mouse", 29.99);
+    catalog.addProduct("Keyboard", 89.99);
+    catalog.addProduct("Monitor", 249.99);
+    catalog.addProduct("Tablet", 349.99);
+
+    // Perform in-order traversal to display products in ascending order of price
+    catalog.inOrderTraversalWithStack();
+
+    return 0;
+}

@@ -1,0 +1,254 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Modified linkedlist structure to store patient information
+struct linkedlist {
+    int patientID;
+    char name[50];
+    char disease[50];
+    struct linkedlist *next;
+};
+
+typedef struct linkedlist node;
+
+// Function prototypes
+void registerPatients(node **start, int n);
+void insertPatientInMiddle(node **start);
+void deletePatientFromMiddle(node **start);
+void displayPatients(node *start);
+int countPatients(node *start);
+void freeList(node **start);
+
+int main() {
+    node *start = NULL;
+    int choice, n;
+
+    do {
+        printf("\n\n===== HOSPITAL PATIENT MANAGEMENT SYSTEM =====\n");
+        printf("1. Register 'n' patients\n");
+        printf("2. Insert a new patient in the middle\n");
+        printf("3. Delete a patient record from the middle\n");
+        printf("4. Display all patient records\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the number of patients to register: ");
+                scanf("%d", &n);
+                registerPatients(&start, n);
+                break;
+            case 2:
+                insertPatientInMiddle(&start);
+                break;
+            case 3:
+                deletePatientFromMiddle(&start);
+                break;
+            case 4:
+                displayPatients(start);
+                break;
+            case 5:
+                printf("Exiting program...\n");
+                freeList(&start);
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 5);
+
+    return 0;
+}
+
+// Function to register n patients
+void registerPatients(node **start, int n) {
+    int i;
+    node *newNode, *temp;
+
+    for (i = 0; i < n; i++) {
+        // Allocate memory for new node
+        newNode = (node *)malloc(sizeof(node));
+        if (newNode == NULL) {
+            printf("Memory allocation failed!\n");
+            return;
+        }
+
+        // Input patient details
+        printf("\nEnter details for Patient %d:\n", i + 1);
+        printf("Patient ID: ");
+        scanf("%d", &newNode->patientID);
+        printf("Name: ");
+        scanf(" %[^\n]", newNode->name);
+        printf("Disease: ");
+        scanf(" %[^\n]", newNode->disease);
+        newNode->next = NULL;
+
+        // If list is empty, make the new node as start
+        if (*start == NULL) {
+            *start = newNode;
+        } else {
+            // Otherwise, add to the end of the list
+            temp = *start;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = newNode;
+        }
+
+        printf("Patient registered successfully!\n");
+    }
+}
+
+// Function to insert a patient in the middle of the list
+void insertPatientInMiddle(node **start) {
+    node *newNode, *temp;
+    int count, middle, i;
+
+    count = countPatients(*start);
+
+    if (count == 0) {
+        printf("List is empty. Adding patient as the first record.\n");
+        newNode = (node *)malloc(sizeof(node));
+        if (newNode == NULL) {
+            printf("Memory allocation failed!\n");
+            return;
+        }
+        printf("Enter Patient ID: ");
+        scanf("%d", &newNode->patientID);
+        printf("Enter Name: ");
+        scanf(" %[^\n]", newNode->name);
+        printf("Enter Disease: ");
+        scanf(" %[^\n]", newNode->disease);
+        newNode->next = NULL;
+        *start = newNode;
+        printf("Patient added successfully!\n");
+        return;
+    }
+
+    middle = count / 2;
+
+    newNode = (node *)malloc(sizeof(node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+
+    printf("\nEnter details for new patient to be inserted at middle position:\n");
+    printf("Patient ID: ");
+    scanf("%d", &newNode->patientID);
+    printf("Name: ");
+    scanf(" %[^\n]", newNode->name);
+    printf("Enter Disease: ");
+    scanf(" %[^\n]", newNode->disease);
+
+    if (middle == 0) {
+        // If only one node, insert at beginning
+        newNode->next = *start;
+        *start = newNode;
+    } else {
+        // Navigate to the node just before the middle position
+        temp = *start;
+        for (i = 0; i < middle - 1; i++) {
+            temp = temp->next;
+        }
+        // Insert new node
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+
+    printf("Patient inserted in the middle successfully!\n");
+}
+
+// Function to delete a patient from the middle of the list
+void deletePatientFromMiddle(node **start) {
+    node *temp, *toDelete;
+    int count, middle, i;
+
+    count = countPatients(*start);
+
+    if (*start == NULL) {
+        printf("List is empty. Nothing to delete.\n");
+        return;
+    }
+
+    if (count == 1) {
+        printf("Only one patient record exists. Deleting it.\n");
+        free(*start);
+        *start = NULL;
+        printf("Patient record deleted successfully!\n");
+        return;
+    }
+
+    middle = count / 2;
+
+    if (middle == 0) {
+        // If deleting the first node
+        temp = *start;
+        *start = (*start)->next;
+        free(temp);
+    } else {
+        // Navigate to the node just before the middle position
+        temp = *start;
+        for (i = 0; i < middle - 1; i++) {
+            temp = temp->next;
+        }
+        // Delete the middle node
+        toDelete = temp->next;
+        temp->next = toDelete->next;
+        free(toDelete);
+    }
+
+    printf("Patient record deleted from the middle successfully!\n");
+}
+
+// Function to display all patient records
+void displayPatients(node *start) {
+    node *temp;
+    int count = 0;
+
+    if (start == NULL) {
+        printf("No patient records available.\n");
+        return;
+    }
+
+    printf("\n===== PATIENT RECORDS =====\n");
+    printf("%-10s %-30s %-30s\n", "ID", "Name", "Disease");
+    printf("--------------------------------------------------------\n");
+
+    temp = start;
+    while (temp != NULL) {
+        printf("%-10d %-30s %-30s\n", temp->patientID, temp->name, temp->disease);
+        temp = temp->next;
+        count++;
+    }
+
+    printf("\nTotal patients: %d\n", count);
+}
+
+// Function to count the number of patients in the list
+int countPatients(node *start) {
+    int count = 0;
+    node *temp = start;
+
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+
+    return count;
+}
+
+// Function to free all allocated memory
+void freeList(node **start) {
+    node *current = *start;
+    node *next;
+
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+
+    *start = NULL;
+}

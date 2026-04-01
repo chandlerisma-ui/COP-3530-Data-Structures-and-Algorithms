@@ -1,0 +1,208 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Modified DoubleLinkedList structure to store event information
+struct DoubleLinkedList {
+    int eventID;
+    char eventName[50];
+    char date[20];
+    struct DoubleLinkedList *left;
+    struct DoubleLinkedList *right;
+};
+
+typedef struct DoubleLinkedList node;
+
+// Function prototypes
+void logEvents(node **start, int n);
+void insertEventAtBeginning(node **start);
+void deleteMostRecentEvent(node **start);
+void displayEvents(node *start);
+void freeList(node **start);
+
+int main() {
+    node *start = NULL;
+    int choice, n;
+
+    do {
+        printf("\n\n===== HOSPITAL EVENT LOG SYSTEM =====\n");
+        printf("1. Log 'n' events\n");
+        printf("2. Insert a new event at the beginning\n");
+        printf("3. Delete the most recent event (from the end)\n");
+        printf("4. Display all events\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the number of events to log: ");
+                scanf("%d", &n);
+                logEvents(&start, n);
+                break;
+            case 2:
+                insertEventAtBeginning(&start);
+                break;
+            case 3:
+                deleteMostRecentEvent(&start);
+                break;
+            case 4:
+                displayEvents(start);
+                break;
+            case 5:
+                printf("Exiting program...\n");
+                freeList(&start);
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 5);
+
+    return 0;
+}
+
+// Function to log n events
+void logEvents(node **start, int n) {
+    int i;
+    node *newNode, *temp;
+
+    for (i = 0; i < n; i++) {
+        // Allocate memory for new node
+        newNode = (node *)malloc(sizeof(node));
+        if (newNode == NULL) {
+            printf("Memory allocation failed!\n");
+            return;
+        }
+
+        // Input event details
+        printf("\nEnter details for Event %d:\n", i + 1);
+        printf("Event ID: ");
+        scanf("%d", &newNode->eventID);
+        printf("Event Name: ");
+        scanf(" %[^\n]", newNode->eventName);
+        printf("Date (DD/MM/YYYY): ");
+        scanf(" %[^\n]", newNode->date);
+        newNode->right = NULL;
+
+        // If list is empty, make the new node as start
+        if (*start == NULL) {
+            newNode->left = NULL;
+            *start = newNode;
+        } else {
+            // Otherwise, add to the end of the list
+            temp = *start;
+            while (temp->right != NULL) {
+                temp = temp->right;
+            }
+            temp->right = newNode;
+            newNode->left = temp;
+        }
+
+        printf("Event logged successfully!\n");
+    }
+}
+
+// Function to insert an event at the beginning of the list
+void insertEventAtBeginning(node **start) {
+    node *newNode;
+
+    // Allocate memory for new node
+    newNode = (node *)malloc(sizeof(node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+
+    // Input event details
+    printf("\nEnter details for the new event:\n");
+    printf("Event ID: ");
+    scanf("%d", &newNode->eventID);
+    printf("Event Name: ");
+    scanf(" %[^\n]", newNode->eventName);
+    printf("Date (DD/MM/YYYY): ");
+    scanf(" %[^\n]", newNode->date);
+    newNode->left = NULL;
+
+    if (*start == NULL) {
+        // If list is empty
+        newNode->right = NULL;
+        *start = newNode;
+    } else {
+        // Insert at the beginning
+        newNode->right = *start;
+        (*start)->left = newNode;
+        *start = newNode;
+    }
+
+    printf("Event inserted at the beginning successfully!\n");
+}
+
+// Function to delete the most recent event (from the end)
+void deleteMostRecentEvent(node **start) {
+    node *temp, *prev;
+
+    if (*start == NULL) {
+        printf("Event log is empty. Nothing to delete.\n");
+        return;
+    }
+
+    if ((*start)->right == NULL) {
+        // If only one event exists
+        printf("Deleting the only event: %s\n", (*start)->eventName);
+        free(*start);
+        *start = NULL;
+        printf("Event deleted successfully!\n");
+        return;
+    }
+
+    // Navigate to the last node
+    temp = *start;
+    while (temp->right != NULL) {
+        temp = temp->right;
+    }
+
+    // Delete the last node
+    prev = temp->left;
+    prev->right = NULL;
+    printf("Deleting most recent event: %s\n", temp->eventName);
+    free(temp);
+    printf("Most recent event deleted successfully!\n");
+}
+
+// Function to display all events
+void displayEvents(node *start) {
+    node *temp;
+    int count = 0;
+
+    if (start == NULL) {
+        printf("No events are logged yet.\n");
+        return;
+    }
+
+    printf("\n===== HOSPITAL EVENT LOG =====\n");
+    printf("%-10s %-30s %-15s\n", "Event ID", "Event Name", "Date");
+    printf("-----------------------------------------------------\n");
+
+    temp = start;
+    while (temp != NULL) {
+        printf("%-10d %-30s %-15s\n", temp->eventID, temp->eventName, temp->date);
+        temp = temp->right;
+        count++;
+    }
+
+    printf("\nTotal events: %d\n", count);
+}
+
+// Function to free all allocated memory
+void freeList(node **start) {
+    node *current = *start;
+    node *next;
+
+    while (current != NULL) {
+        next = current->right;
+        free(current);
+        current = next;
+    }
+
+    *start = NULL;
+}
